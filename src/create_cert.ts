@@ -48,6 +48,7 @@ cert.setExtensions([{
 cert.sign(keys.privateKey, forge.md.sha256.create());
 var certPem = pki.certificateToPem(cert);
 var keyPem = pki.privateKeyToPem(keys.privateKey);
+fs.writeFileSync('vProxy.crt', certPem)
 console.log('公钥内容：\n');
 console.log(certPem);
 console.log('私钥内容：\n');
