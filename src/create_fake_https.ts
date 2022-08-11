@@ -3,7 +3,6 @@ import forge from 'node-forge';
 import tls from 'tls';
 import url from 'url';
 import fs from 'fs';
-import { createRootCert } from './create_cert';
 const pki = forge.pki;
 
 var caCert  = pki.certificateFromPem(fs.readFileSync('vProxy.crt').toString());
@@ -32,7 +31,6 @@ export function createFakeHttpsWebSite(domain, successFun) {
         successFun(address.port);
     });
     fakeServer.on('request', (req, res) => {
-        console.dir(req)
         // 解析客户端请求
         var urlObject = url.parse(req.url);
         let options =  {
@@ -43,9 +41,21 @@ export function createFakeHttpsWebSite(domain, successFun) {
             path: urlObject.path,
             headers: req.headers
         };
-        res.writeHead(200, { 'Content-Type': 'text/html;charset=utf-8'});
-        res.write(`<html><body>我是伪造的: ${options.protocol}//${options.hostname} 站点</body></html>`)
-        res.end();
+        const httpsReq = https.request(`https://${options.hostname}${options.path}`, (httpsRes) => {
+            res.writeHead(httpsRes.statusCode || 500, httpsRes.headers);
+            
+            let data = '';
+            httpsRes.on('data', (chunk) => {
+                data = data + chunk.toString();
+            });
+        
+            httpsRes.on('end', () => {
+                res.write(data)
+                res.end();
+            });
+        });
+
+        httpsReq.end()
     });
     fakeServer.on('error', (e) => {
         console.error(e);
