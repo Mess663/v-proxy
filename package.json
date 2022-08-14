@@ -4,7 +4,8 @@
   "description": "http/https proxy writed by rust",
   "main": "index.js",
   "scripts": {
-    "start": "ts-node --transpileOnly src/index.ts",
+    "start": "nodemon --transpileOnly src/index.ts",
+    "dev": "ts-node --transpileOnly src/index.ts",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
@@ -18,13 +19,27 @@
   },
   "homepage": "https://github.com/Mess663/v-proxy#readme",
   "dependencies": {
+    "@types/co": "^4.6.3",
+    "@types/koa": "^2.13.5",
+    "@types/koa-route": "^3.2.5",
+    "@types/koa-static": "^4.0.2",
+    "@types/koa-websocket": "^5.0.7",
+    "@types/koa2-cors": "^2.0.2",
     "@types/mkdirp": "^1.0.2",
     "@types/node": "^18.6.4",
     "@types/node-forge": "^1.0.4",
+    "co": "^4.6.0",
     "eslint": "^8.21.0",
+    "koa": "^2.13.4",
+    "koa-route": "^3.2.0",
+    "koa-static": "^5.0.0",
+    "koa-websocket": "^7.0.0",
+    "koa2-cors": "^2.0.6",
     "mkdirp": "^1.0.4",
     "node-forge": "^1.3.1",
+    "nodemon": "^2.0.19",
     "ts-node": "^10.9.1",
-    "typescript": "^4.7.4"
+    "typescript": "^4.7.4",
+    "ws": "^8.8.1"
   }
 }

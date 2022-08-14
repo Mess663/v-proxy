@@ -3,6 +3,7 @@ import forge from 'node-forge';
 import tls from 'tls';
 import url from 'url';
 import fs from 'fs';
+import { co } from 'co';
 const pki = forge.pki;
 
 var caCert  = pki.certificateFromPem(fs.readFileSync('vProxy.crt').toString());
@@ -13,7 +14,7 @@ var caKey= pki.privateKeyFromPem(fs.readFileSync('vProxy.key.pem').toString());
  * @param  {[type]} successFun [description]
  * @return {[type]}            [description]
  */
-export function createFakeHttpsWebSite(domain, successFun) {
+export function createFakeHttpsWebSite(domain: string, successFun: (p: number) => void, wsInstance) {
     const fakeCertObj = createFakeCertificateByDomain(caKey, caCert, domain)
     var fakeServer = new https.Server({
         key: pki.privateKeyToPem(fakeCertObj.key),
@@ -28,16 +29,18 @@ export function createFakeHttpsWebSite(domain, successFun) {
     });
     fakeServer.listen(0, () => {
         var address = fakeServer.address();
-        successFun(address.port);
+        const port = typeof address === 'string' ? 443 : address?.port 
+        successFun(port || 443);
     });
     fakeServer.on('request', (req, res) => {
         // 解析客户端请求
-        var urlObject = url.parse(req.url);
+        var urlObject = url.parse(req.url || '');
+        const hostName = req.headers.host || '';
         let options =  {
             protocol: 'https:',
-            hostname: req.headers.host.split(':')[0],
+            hostname: hostName.split(':')[0],
             method: req.method,
-            port: req.headers.host.split(':')[1] || 80,
+            port: hostName.split(':')[1] || 443,
             path: urlObject.path,
             headers: req.headers
         };
@@ -52,6 +55,14 @@ export function createFakeHttpsWebSite(domain, successFun) {
             httpsRes.on('end', () => {
                 res.write(data)
                 res.end();
+
+                console.log(options.hostname)
+                const isMyWeb = options.hostname === 'v.proxy.com';
+                if (!isMyWeb && wsInstance) {
+                    co(function *() {
+                        wsInstance.send(JSON.stringify({...options, data}))
+                    })
+                } 
             });
         });
 
