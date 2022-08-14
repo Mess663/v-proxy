@@ -10,23 +10,16 @@ import websockify from 'koa-websocket';
 import cors from 'koa2-cors';
 import co from 'co'
 
-
-
-type KoaApp = websockify.App<Koa.DefaultState, Koa.DefaultContext>
-
 let wsInstance: any = null
-
 
 const request = (cReq: http.IncomingMessage, cRes: http.ServerResponse) => {
     if (!cReq.url) return;
 
     var u = url.parse(cReq.url);
 
-    const isMyWeb = u.hostname === 'v.proxy.com';
-
     var options = {
-        hostname : isMyWeb ?  '127.0.0.1' : u.hostname, 
-        port     : isMyWeb ? 5173 : (u.port || 80),
+        hostname : u.hostname, 
+        port     : (u.port || 80),
         path     : u.path,       
         method     : cReq.method,
         headers     : cReq.headers
@@ -41,7 +34,7 @@ const request = (cReq: http.IncomingMessage, cRes: http.ServerResponse) => {
             data = data + chunk.toString();
         })
 
-        if (!isMyWeb && wsInstance) {
+        if (wsInstance) {
             pRes.on("end", ()=> {
                 co(function *() {
                     wsInstance.send(JSON.stringify({...options, protocol: 'http:', data: data}))
@@ -73,26 +66,11 @@ const connect = (cReq: IncomingMessage, cltSocket: stream.Duplex, head) => {
             console.error(e);
         });
     }, wsInstance)
-
-    // var pSock = net.connect(Number(u.port), u.hostname, function() {
-    //     cSock.write('HTTP/1.1 200 Connection Established\r\n\r\n');
-    //     pSock.pipe(cSock);
-    // }).on('error', function(e) {
-    //     cSock.end();
-    // });
-
-    // cSock.pipe(pSock);
 }
 
 const setWebSocketServer = () => {
     const app = websockify(new Koa(), {});
     app.ws.use(route.all('/proxy', function (ctx) {
-        // ctx.websocket.send('Hello World');
-        // ctx.websocket.onmessage = (ev) => {
-        //     console.log(ev.data)
-        // }
-        console.log('-------')
-
         wsInstance = ctx.websocket        
 
         ctx.websocket.on("error", (err) => {

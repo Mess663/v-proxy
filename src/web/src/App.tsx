@@ -12,7 +12,8 @@ const string2Base64 = (s: string) => {
     return btoa(code) 
 }
 
-const socketUrl = 'ws://v.proxy.com:82/proxy'
+
+const socketUrl = import.meta.env.MODE === 'development' ? 'ws://v.proxy.com:82/proxy' : 'ws://127.0.0.1:82/proxy'
 function App() {
   const [messageHistory, setMessageHistory] = useState<ProxyData[]>([]);
   const [message, setMessage] = useState<ProxyData>()

@@ -10,12 +10,12 @@ var caCert  = pki.certificateFromPem(fs.readFileSync('vProxy.crt').toString());
 var caKey= pki.privateKeyFromPem(fs.readFileSync('vProxy.key.pem').toString());
 /**
  * 根据域名生成一个伪造的https服务
- * @param  {[type]} domain     [description]
- * @param  {[type]} successFun [description]
- * @return {[type]}            [description]
  */
 export function createFakeHttpsWebSite(domain: string, successFun: (p: number) => void, wsInstance) {
+    // 拿到受信根证书签发的子证书及生成的私钥
     const fakeCertObj = createFakeCertificateByDomain(caKey, caCert, domain)
+
+    // 启动https服务，接受来自客户端的握手
     var fakeServer = new https.Server({
         key: pki.privateKeyToPem(fakeCertObj.key),
         cert: pki.certificateToPem(fakeCertObj.cert),
@@ -32,6 +32,7 @@ export function createFakeHttpsWebSite(domain: string, successFun: (p: number) =
         const port = typeof address === 'string' ? 443 : address?.port 
         successFun(port || 443);
     });
+    
     fakeServer.on('request', (req, res) => {
         // 解析客户端请求
         var urlObject = url.parse(req.url || '');
@@ -44,6 +45,8 @@ export function createFakeHttpsWebSite(domain: string, successFun: (p: number) =
             path: urlObject.path,
             headers: req.headers
         };
+
+        // 拿着客户端的请求参数转发给目标服务器
         const httpsReq = https.request(`https://${options.hostname}${options.path}`, (httpsRes) => {
             res.writeHead(httpsRes.statusCode || 500, httpsRes.headers);
             
@@ -53,33 +56,29 @@ export function createFakeHttpsWebSite(domain: string, successFun: (p: number) =
             });
         
             httpsRes.on('end', () => {
+                // 拿到目标服务器的所有数据，转发给客户端
                 res.write(data)
                 res.end();
 
-                console.log(options.hostname)
-                const isMyWeb = options.hostname === 'v.proxy.com';
-                if (!isMyWeb && wsInstance) {
-                    co(function *() {
-                        wsInstance.send(JSON.stringify({...options, data}))
-                    })
+                // 通过 websocket 将代理内容发给抓包站点
+                if (wsInstance) {
+                    wsInstance.send(JSON.stringify({...options, data}))
                 } 
             });
         });
 
         httpsReq.end()
     });
+
     fakeServer.on('error', (e) => {
-        console.error(e);
+        console.error('Https Error: ', e);
     });
 }
+
 /**
  * 根据所给域名生成对应证书
- * @param  {[type]} caKey  [description]
- * @param  {[type]} caCert [description]
- * @param  {[type]} domain [description]
- * @return {[type]}        [description]
  */
-function createFakeCertificateByDomain(caKey, caCert, domain) {
+function createFakeCertificateByDomain(caKey: forge.pki.rsa.PrivateKey, caCert: forge.pki.Certificate, domain: string) {
     var keys = pki.rsa.generateKeyPair(2046);
     var cert = pki.createCertificate();
     cert.publicKey = keys.publicKey;
@@ -88,6 +87,7 @@ function createFakeCertificateByDomain(caKey, caCert, domain) {
     cert.validity.notBefore.setFullYear(cert.validity.notBefore.getFullYear() - 1);
     cert.validity.notAfter = new Date();
     cert.validity.notAfter.setFullYear(cert.validity.notAfter.getFullYear() + 1);
+
     var attrs = [{
       name: 'commonName',
       value: domain
@@ -102,10 +102,7 @@ function createFakeCertificateByDomain(caKey, caCert, domain) {
       value: 'ShengZhen'
     }, {
       name: 'organizationName',
-      value: 'https-mitm-proxy-handbook'
-    }, {
-      shortName: 'OU',
-      value: 'https://github.com/wuchangming/https-mitm-proxy-handbook'
+      value: 'v-proxy'
     }];
     cert.setIssuer(caCert.subject.attributes);
     cert.setSubject(attrs);
@@ -148,7 +145,10 @@ function createFakeCertificateByDomain(caKey, caCert, domain) {
     {
         name:'authorityKeyIdentifier'
     }]);
+
+    // 证书签名
     cert.sign(caKey, forge.md.sha256.create());
+
     return {
         key: keys.privateKey,
         cert: cert
