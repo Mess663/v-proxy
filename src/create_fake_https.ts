@@ -3,7 +3,6 @@ import forge from 'node-forge';
 import tls from 'tls';
 import url from 'url';
 import fs from 'fs';
-import { co } from 'co';
 const pki = forge.pki;
 
 var caCert  = pki.certificateFromPem(fs.readFileSync('vProxy.crt').toString());
@@ -20,10 +19,9 @@ export function createFakeHttpsWebSite(domain: string, successFun: (p: number) =
         key: pki.privateKeyToPem(fakeCertObj.key),
         cert: pki.certificateToPem(fakeCertObj.cert),
         SNICallback: (hostname, done) => {
-            let certObj = createFakeCertificateByDomain(caKey, caCert, hostname)
             done(null, tls.createSecureContext({
-                key: pki.privateKeyToPem(certObj.key),
-                cert: pki.certificateToPem(certObj.cert)
+                key: pki.privateKeyToPem(fakeCertObj.key),
+                cert: pki.certificateToPem(fakeCertObj.cert)
             }))
         }
     });
@@ -32,7 +30,6 @@ export function createFakeHttpsWebSite(domain: string, successFun: (p: number) =
         const port = typeof address === 'string' ? 443 : address?.port 
         successFun(port || 443);
     });
-    
     fakeServer.on('request', (req, res) => {
         // 解析客户端请求
         var urlObject = url.parse(req.url || '');
@@ -59,6 +56,8 @@ export function createFakeHttpsWebSite(domain: string, successFun: (p: number) =
                 // 拿到目标服务器的所有数据，转发给客户端
                 res.write(data)
                 res.end();
+
+                fakeServer.close()
 
                 // 通过 websocket 将代理内容发给抓包站点
                 if (wsInstance) {
