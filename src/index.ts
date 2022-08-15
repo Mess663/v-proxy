@@ -55,9 +55,7 @@ const connect = (cReq: IncomingMessage, cltSocket: stream.Duplex, head) => {
 
     createFakeHttpsWebSite(u.hostname, (port: number) => {
         var srvSocket = net.connect(port, '127.0.0.1', () => {
-            cltSocket.write('HTTP/1.1 200 Connection Established\r\n' +
-                            'Proxy-agent: MITM-proxy\r\n' +
-                            '\r\n');
+            cltSocket.write('HTTP/1.1 200 Connection Established\r\n\r\n');
             srvSocket.write(head);
             srvSocket.pipe(cltSocket);
             cltSocket.pipe(srvSocket);
