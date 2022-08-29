@@ -80,7 +80,7 @@ const setWebSocketServer = () => {
     app.listen(82)
 }
 
-const webServer = () => {
+const setWebServer = () => {
     const app = new Koa();
 
     app.use(staticServe('./src/web/dist') )
@@ -94,25 +94,22 @@ const webServer = () => {
         })
     );
 
-
-    return app
+    app.listen(80)
 }
 
-const proxyServer = () => {
+const setProxyServer = () => {
     const port = 8080;
     http.createServer()
-        .on('request', (req, res) => request(req, res))
+        .on('request', request)
         .on('connect', connect)
         .listen(8080, '0.0.0.0', () => console.log(`代理启动成功，监听0.0.0.0:${port}\n`));
 }
 
 
 const main = () => {
-    const webPort = 81
-    const webApp = webServer()
+    setWebServer()
     setWebSocketServer()
-    webApp.listen(webPort)
-    proxyServer()
+    setProxyServer()
 }
 
 main()
