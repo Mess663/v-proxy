@@ -75,7 +75,7 @@ export function createFakeHttpsWebSite(domain: string, successFun: (p: number) =
 }
 
 /**
- * 根据所给域名生成对应证书
+ * 根据所给域名生成对应证书，并通过根证书为其签名
  */
 function createFakeCertificateByDomain(caKey: forge.pki.rsa.PrivateKey, caCert: forge.pki.Certificate, domain: string) {
     var keys = pki.rsa.generateKeyPair(2046);
@@ -145,7 +145,7 @@ function createFakeCertificateByDomain(caKey: forge.pki.rsa.PrivateKey, caCert: 
         name:'authorityKeyIdentifier'
     }]);
 
-    // 证书签名
+    // 用根证书的私钥进行证书签名，这样此证书才会被浏览器信任
     cert.sign(caKey, forge.md.sha256.create());
 
     return {
