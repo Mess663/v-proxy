@@ -2,11 +2,11 @@ import forge from 'node-forge';
 const pki = forge.pki;
 import fs from 'fs';
 
-var keys = pki.rsa.generateKeyPair(1024);
-var cert = pki.createCertificate();
+var keys = pki.rsa.generateKeyPair(1024); // 非对称密钥对
+var cert = pki.createCertificate(); // 根证书
     
 export const createRootCert = () => {
-    cert.publicKey = keys.publicKey;
+    cert.publicKey = keys.publicKey; // 公钥放进证书里
     cert.serialNumber = (new Date()).getTime() + '';
 
     // 设置CA证书有效期
@@ -15,6 +15,7 @@ export const createRootCert = () => {
     cert.validity.notAfter = new Date();
     cert.validity.notAfter.setFullYear(cert.validity.notAfter.getFullYear() + 20);
 
+    // 填充证书基本内容
     var attrs = [{
         name: 'commonName',
         value: 'v-proxy' 
