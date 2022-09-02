@@ -2,7 +2,7 @@ import http, { IncomingMessage, RequestListener } from 'http';
 import net from 'net';
 import stream from 'stream';
 import url from 'url';
-import { createFakeHttpsWebSite } from './create_fake_https';
+import { createFakeHttpsWebSite } from './https_proxy';
 import Koa from 'koa';
 import staticServe from "koa-static";
 import route from 'koa-route';
