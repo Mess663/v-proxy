@@ -42,6 +42,7 @@ export function createFakeHttpsWebSite(domain: string, successFun: (p: number) =
             path: urlObject.path,
             headers: req.headers
         };
+        
 
         // 拿着客户端的请求参数转发给目标服务器
         const httpsReq = https.request(`https://${options.hostname}${options.path}`, (httpsRes) => {
@@ -61,7 +62,14 @@ export function createFakeHttpsWebSite(domain: string, successFun: (p: number) =
 
                 // 通过 websocket 将代理内容发给抓包站点
                 if (wsInstance) {
-                    wsInstance.send(JSON.stringify({...options, data}))
+                    wsInstance.send(JSON.stringify({
+                        req: options,
+                        res: {
+                            statusCode: httpsRes.statusCode,    
+                            data,
+                            ...httpsRes.headers,
+                        }
+                    }))
                 } 
             });
         });

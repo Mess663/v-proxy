@@ -4,25 +4,37 @@ import { Manager } from "socket.io-client";
 import useWebSocket, { ReadyState } from 'react-use-websocket';
 import { JsonValue } from 'react-use-websocket/dist/lib/types';
 import styles from './App.module.less'
+import { useLocalStorageState } from 'ahooks';
+import { Request, Response } from './definition/proxy';
+import ProxyItem from './components/ProxyItem';
+import { indexOf } from 'lodash'
 
-interface ProxyData {hostname: string, path: string, protocol: string, data: string, headers: Record<string, string>}
+interface ProxyData { req: Request, res: Response }
 
 const string2Base64 = (s: string) => {
-    const code = encodeURI(s) 
-    return btoa(code) 
+  const code = encodeURI(s)
+  return btoa(code)
 }
 
+const getContentType = (t: string) => t.slice(0, t.indexOf(';') + 1 || t.length)
 
-const socketUrl = import.meta.env.MODE === 'development' ? 'ws://v.proxy.com:82/proxy' : 'ws://127.0.0.1:82/proxy'
+const socketUrl = 'ws://127.0.0.1:82/proxy'
 function App() {
-  const [messageHistory, setMessageHistory] = useState<ProxyData[]>([]);
+  // const [messageHistory, setMessageHistory] = useState<ProxyData[]>([]);
   const [message, setMessage] = useState<ProxyData>()
+  const [messageHistory, setLocal] = useLocalStorageState<ProxyData[]>('message')
 
-  useWebSocket(socketUrl, {
-    onMessage(event) {
-      setMessageHistory(o => [JSON.parse(event.data)].concat(o))
-    },
-  });
+  // useWebSocket(socketUrl, {
+  //   onMessage(event) {
+  //     setLocal(o => {
+  //       console.log(o)
+  //       const d = JSON.parse(event.data)
+  //       if (!o) return [d]
+  //       return [...o, d]
+  //     })
+  //     setMessageHistory(o => [JSON.parse(event.data)].concat(o))
+  //   },
+  // });
 
   // const connectionStatus = {
   //   [ReadyState.CONNECTING]: 'Connecting',
@@ -34,20 +46,27 @@ function App() {
 
   return (
     <div className={styles.page}>
-      <ul className={styles.list}>
+      <div className={styles.list}>
+        <ProxyItem 
+          hostname={'Name'} 
+          statusCode={'Status'} 
+          contentType={'Type'}
+        />
         {messageHistory.map((message, idx) => (
-          <div key={idx} className={styles.item} onClick={() => setMessage(message)}>
-            {message ? `${message.protocol}//${message.hostname}${message.path}` : null}
-          </div>
+          <ProxyItem 
+            hostname={`${message.req.protocol}//${message.req.hostname}${message.req.path}`} 
+            statusCode={message.res.statusCode || 500} 
+            contentType={getContentType(message.res['content-type'])}
+          />
         ))}
-      </ul>
+      </div>
 
       <div className={styles.show}>
-          {
-            message?.headers.accept.includes('image') ? 
+        {/* {
+          message?.headers.accept.includes('image') ?
             <img src={string2Base64(message.data)} /> :
             message?.data
-          }
+        } */}
       </div>
     </div>
   );

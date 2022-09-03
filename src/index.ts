@@ -36,9 +36,14 @@ const request = (cReq: http.IncomingMessage, cRes: http.ServerResponse) => {
 
         if (wsInstance) {
             pRes.on("end", ()=> {
-                co(function *() {
-                    wsInstance.send(JSON.stringify({...options, protocol: 'http:', data: data}))
-                })
+                wsInstance.send(JSON.stringify({
+                    req: options,
+                    res: {
+                        statusCode: pRes.statusCode,    
+                        data,
+                        ...pRes.headers,
+                    }
+                }))
             })
         }
     }).on('error', function(e) {

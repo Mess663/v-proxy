@@ -1,0 +1,32 @@
+.item {
+    display: flex;
+    height: 36px;
+    align-items: center;
+    padding: 0 6px;
+
+    >div+div {
+        margin-left: 20px;
+    }
+
+    &:nth-child(odd) {
+        background-color: rgb(232, 231, 231);
+    }
+
+    &:hover {
+        background-color: rgb(202, 230, 240);
+    }
+
+    .hostname {
+        flex: 1;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .statusCode {
+        width: 40px;
+    } 
+    .contentType {
+        width: 180px;
+    }
+}
