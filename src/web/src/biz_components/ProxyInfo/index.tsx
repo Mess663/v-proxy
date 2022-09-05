@@ -2,23 +2,12 @@ import { useRequest } from 'ahooks';
 import React, { useEffect } from 'react';
 import css from './index.module.less';
 import { Typography, Space } from 'antd'
+import { getLocalInfo } from '../../server/network';
 
 const { Text } = Typography;
 
-interface LocalInfo {
-  host: string
-  ip: string
-  pid: string
-}
-
 const ProxyInfo = () => {
-  const { data } = useRequest<LocalInfo, void[]>(() => fetch('http://localhost/local-info', { 
-      method: 'Get',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-    }).then(data => data.json()).then((res) => res.data)
-  )
+  const { data } = useRequest(getLocalInfo)
   
   return <div className={css.container}>
     <Space direction='vertical'>
