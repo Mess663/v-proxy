@@ -59,13 +59,14 @@ function App() {
             statusCode={'Status'}
             contentType={'Type'}
           />
-          {messageHistory.map((message) => (
+          {messageHistory.map((msg) => (
             <ProxyItem
-              onClick={() => setMessage(message)}
+              onClick={() => setMessage(msg)}
+              active={msg.id === message?.id}
               // key={message.id}
-              hostname={`${message.req.protocol}//${message.req.hostname}${message.req.path}`}
-              statusCode={message.res.statusCode || 500}
-              contentType={getContentType(message.res['content-type'])}
+              hostname={`${msg.req.protocol}//${msg.req.hostname}${msg.req.path}`}
+              statusCode={msg.res.statusCode || 500}
+              contentType={getContentType(msg.res['content-type'])}
             />
           ))}
         </div>
