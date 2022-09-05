@@ -38,6 +38,11 @@ const request = (cReq: http.IncomingMessage, cRes: http.ServerResponse) => {
             data = data + chunk.toString();
         })
 
+        pRes.on('error', (err) => {
+            console.error('[http response]', err)
+            pReq.destroy()
+        })
+
         if (wsInstance) {
             pRes.on("end", ()=> {
                 wsInstance.send(JSON.stringify({
@@ -52,6 +57,7 @@ const request = (cReq: http.IncomingMessage, cRes: http.ServerResponse) => {
             })
         }
     }).on('error', function(e) {
+        console.error('[http proxy request]', e)
         cRes.end();
     });
 
@@ -71,7 +77,7 @@ const connect = (cReq: IncomingMessage, cltSocket: stream.Duplex, head) => {
             cltSocket.pipe(srvSocket);
         });
         srvSocket.on('error', (e) => {
-            console.error(e);
+            console.error('[https request]', e);
         });
     }, wsInstance)
 }
@@ -82,11 +88,14 @@ const setWebSocketServer = () => {
         wsInstance = ctx.websocket        
 
         ctx.websocket.on("error", (err) => {
-            console.log('ERROR: ', err)
+            console.log('[ws错误]', err)
             ctx.websocket.terminate()
             setWebSocketServer()
         })
     }));
+    app.on('error', (err) => {
+        console.error('[ws setup]', err.message)
+    })
     app.listen(82)
 }
 
@@ -111,6 +120,10 @@ const setWebServer = () => {
     app.use(staticServe('./src/web/dist'))
     app.use(staticServe('./src/public'))
 
+    app.on('error', (e) => {
+        console.error('[static]', e.message)
+    })
+
     app.listen(80)
 }
 
@@ -119,6 +132,9 @@ const setProxyServer = () => {
     http.createServer()
         .on('request', request)
         .on('connect', connect)
+        .on('error', (err) => {
+            console.error('[代理服务]' + err.message)
+        })
         .listen(8080, '0.0.0.0', () => console.log(`代理启动成功，监听0.0.0.0:${port}\n`));
 }
 
@@ -130,5 +146,3 @@ const main = () => {
 }
 
 main()
-
-console.log(ip.address())
