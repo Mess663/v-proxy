@@ -3,6 +3,7 @@ import forge from 'node-forge';
 import tls from 'tls';
 import url from 'url';
 import fs from 'fs';
+import { uniqueId } from 'lodash';
 const pki = forge.pki;
 
 var caCert  = pki.certificateFromPem(fs.readFileSync('vProxy.crt').toString());
@@ -63,6 +64,7 @@ export function createFakeHttpsWebSite(domain: string, successFun: (p: number) =
                 // 通过 websocket 将代理内容发给抓包站点
                 if (wsInstance) {
                     wsInstance.send(JSON.stringify({
+                        id: uniqueId(),
                         req: options,
                         res: {
                             statusCode: httpsRes.statusCode,    

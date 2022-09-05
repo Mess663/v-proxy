@@ -6,17 +6,17 @@ import { JsonValue } from 'react-use-websocket/dist/lib/types';
 import styles from './App.module.less'
 import { useLocalStorageState } from 'ahooks';
 import { Request, Response } from './definition/proxy';
-import ProxyItem from './components/ProxyItem';
-import { indexOf } from 'lodash'
+import ProxyItem from './biz_components/ProxyItem';
+import ProxyHeader from './biz_components/ProxyHeader';
 
-interface ProxyData { req: Request, res: Response }
+interface ProxyData { id: number, req: Request, res: Response }
 
 const string2Base64 = (s: string) => {
   const code = encodeURI(s)
   return btoa(code)
 }
 
-const getContentType = (t: string) => t.slice(0, t.indexOf(';') + 1 || t.length)
+const getContentType = (t: string) => t?.slice(0, t.indexOf(';') + 1 || t.length)
 
 const socketUrl = 'ws://127.0.0.1:82/proxy'
 function App() {
@@ -43,30 +43,36 @@ function App() {
   //   [ReadyState.CLOSED]: 'Closed',
   //   [ReadyState.UNINSTANTIATED]: 'Uninstantiated',
   // }[readyState];
+  console.log(messageHistory)
 
   return (
     <div className={styles.page}>
-      <div className={styles.list}>
-        <ProxyItem 
-          hostname={'Name'} 
-          statusCode={'Status'} 
-          contentType={'Type'}
-        />
-        {messageHistory.map((message, idx) => (
-          <ProxyItem 
-            hostname={`${message.req.protocol}//${message.req.hostname}${message.req.path}`} 
-            statusCode={message.res.statusCode || 500} 
-            contentType={getContentType(message.res['content-type'])}
-          />
-        ))}
-      </div>
+      <ProxyHeader></ProxyHeader>
 
-      <div className={styles.show}>
-        {/* {
-          message?.headers.accept.includes('image') ?
-            <img src={string2Base64(message.data)} /> :
-            message?.data
-        } */}
+      <div className={styles.main}>
+        <div className={styles.list}>
+          <ProxyItem 
+            hostname={'Name'} 
+            statusCode={'Status'} 
+            contentType={'Type'}
+          />
+          {messageHistory.map((message) => (
+            <ProxyItem 
+              // key={message.id}
+              hostname={`${message.req.protocol}//${message.req.hostname}${message.req.path}`} 
+              statusCode={message.res.statusCode || 500} 
+              contentType={getContentType(message.res['content-type'])}
+            />
+          ))}
+        </div>
+
+        <div className={styles.show}>
+          {/* {
+            message?.headers.accept.includes('image') ?
+              <img src={string2Base64(message.data)} /> :
+              message?.data
+          } */}
+        </div>
       </div>
     </div>
   );

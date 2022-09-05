@@ -5,11 +5,15 @@ body {
 .page {
   display: flex;
   justify-content: space-around;
+  flex-direction: column;
+
+  .main {
+    display: flex;
+  }
 }
 
 .list {
   overflow-y: overlay;
-  height: calc(100vh - 70px);
 
   .item {
     border: 1px solid #222;

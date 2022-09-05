@@ -1,14 +1,18 @@
 import http, { IncomingMessage, RequestListener } from 'http';
 import net from 'net';
+import ip from 'ip';
 import stream from 'stream';
 import url from 'url';
 import { createFakeHttpsWebSite } from './https_proxy';
 import Koa from 'koa';
-import staticServe from "koa-static";
+import staticCache from 'koa-static-cache'
 import route from 'koa-route';
 import websockify from 'koa-websocket';
 import cors from 'koa2-cors';
-import co from 'co'
+import path from 'path';
+import staticServe from "koa-static";
+import router from './route';
+import { uniqueId } from 'lodash';
 
 let wsInstance: any = null
 
@@ -37,6 +41,7 @@ const request = (cReq: http.IncomingMessage, cRes: http.ServerResponse) => {
         if (wsInstance) {
             pRes.on("end", ()=> {
                 wsInstance.send(JSON.stringify({
+                    id: uniqueId(),
                     req: options,
                     res: {
                         statusCode: pRes.statusCode,    
@@ -88,16 +93,23 @@ const setWebSocketServer = () => {
 const setWebServer = () => {
     const app = new Koa();
 
-    app.use(staticServe('./src/web/dist') )
+    // app.use(staticCache(__dirname + '/src/public', {
+    //     maxAge: 365 * 24 * 60 * 60,
+    //     prefix: 'public'
+    // }))
+    // 注册路由
     app.use(
         cors({
-            origin: 'v.proxy.com',
+            origin: '*',
             credentials: true, //是否允许发送Cookie
             allowMethods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'], //设置所允许的HTTP请求方法
             allowHeaders: ['Content-Type', 'Authorization', 'Accept'], //设置服务器支持的所有头信息字段
             exposeHeaders: ['WWW-Authenticate', 'Server-Authorization'] //设置获取其他自定义字段
         })
     );
+    app.use(router.routes())
+    app.use(staticServe('./src/web/dist'))
+    app.use(staticServe('./src/public'))
 
     app.listen(80)
 }
@@ -118,3 +130,5 @@ const main = () => {
 }
 
 main()
+
+console.log(ip.address())
