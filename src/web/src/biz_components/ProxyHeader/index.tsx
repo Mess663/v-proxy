@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 import styles from './index.module.less'
-import { Modal, Divider } from 'antd'
+import { Modal, Divider, Button } from 'antd'
 import { QuestionCircleFilled } from '@ant-design/icons'
 import HttpsCert from '../HttpsCert'
 import ProxyInfo from '../ProxyInfo'
@@ -8,7 +8,7 @@ import ProxyInfo from '../ProxyInfo'
 const ProxyHeader = () => {
     const [show, setShow] = useState(false)
     return <div className={styles.container}>
-        <h3 onClick={() => setShow(true)}>连接指引 <QuestionCircleFilled /></h3>
+        <Button type='link' onClick={() => setShow(true)}>连接指引 <QuestionCircleFilled /></Button>
 
         <Modal
             footer={null}

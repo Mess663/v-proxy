@@ -52,6 +52,7 @@ function App() {
       <div className={styles.main}>
         <div className={styles.list}>
           <ProxyItem 
+            style={{pointerEvents: 'none'}}
             hostname={'Name'} 
             statusCode={'Status'} 
             contentType={'Type'}
