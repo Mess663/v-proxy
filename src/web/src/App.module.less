@@ -25,8 +25,31 @@ body {
 }
 
 .show {
-  width: 28%;
+  position: fixed;
+  background-color: #fff;
+  top: 40px;
+  right: 0;
+  width: 40%;
   word-wrap: break-word;
+  height: calc(100% - 40px);
+  border-left: 1px solid lightgray;
+  border-top: 1px solid lightgray;
+  padding-left: 36px;
   overflow-y: overlay;
-  height: calc(100vh - 70px);
+
+  .closeIcon {
+    position: absolute;
+    top: 14px;
+    left: 4px;
+    // transform: translateX(-100%);
+    background-color: #fff;
+    border-left: 1px solid lightgray;
+    cursor: pointer;
+    color: grey;
+
+    >svg {
+      width: 20px;
+      height: 20px;
+    }
+  }
 }

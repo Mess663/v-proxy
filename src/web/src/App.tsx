@@ -8,6 +8,8 @@ import { useLocalStorageState } from 'ahooks';
 import { Request, Response } from './definition/proxy';
 import ProxyItem from './biz_components/ProxyItem';
 import ProxyHeader from './biz_components/ProxyHeader';
+import { VerticalLeftOutlined } from '@ant-design/icons'
+import ProxyDetail from './biz_components/ProxyDetail';
 
 interface ProxyData { id: number, req: Request, res: Response }
 
@@ -51,29 +53,31 @@ function App() {
 
       <div className={styles.main}>
         <div className={styles.list}>
-          <ProxyItem 
-            style={{pointerEvents: 'none'}}
-            hostname={'Name'} 
-            statusCode={'Status'} 
+          <ProxyItem
+            style={{ pointerEvents: 'none' }}
+            hostname={'Name'}
+            statusCode={'Status'}
             contentType={'Type'}
           />
           {messageHistory.map((message) => (
-            <ProxyItem 
+            <ProxyItem
+              onClick={() => setMessage(message)}
               // key={message.id}
-              hostname={`${message.req.protocol}//${message.req.hostname}${message.req.path}`} 
-              statusCode={message.res.statusCode || 500} 
+              hostname={`${message.req.protocol}//${message.req.hostname}${message.req.path}`}
+              statusCode={message.res.statusCode || 500}
               contentType={getContentType(message.res['content-type'])}
             />
           ))}
         </div>
 
-        <div className={styles.show}>
-          {/* {
-            message?.headers.accept.includes('image') ?
-              <img src={string2Base64(message.data)} /> :
-              message?.data
-          } */}
-        </div>
+        {
+          message ? (
+            <div className={styles.show}>
+              <VerticalLeftOutlined onClick={() => setMessage(undefined)} className={styles.closeIcon} />
+              <ProxyDetail req={message?.req} res={message.res} />
+            </div>
+          ) : null
+        }
       </div>
     </div>
   );
