@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import reactLogo from './assets/react.svg'
 import { Manager } from "socket.io-client";
 import useWebSocket, { ReadyState } from 'react-use-websocket';
@@ -25,6 +25,8 @@ function App() {
   // const [messageHistory, setMessageHistory] = useState<ProxyData[]>([]);
   const [message, setMessage] = useState<ProxyData>()
   const [messageHistory, setLocal] = useLocalStorageState<ProxyData[]>('message')
+  const [filter, setFilter] = useState('')
+  const list = useMemo(() => messageHistory.filter(o => (o.req.hostname + o.req.path).includes(filter)), [messageHistory, filter])
 
   // useWebSocket(socketUrl, {
   //   onMessage(event) {
@@ -49,7 +51,7 @@ function App() {
 
   return (
     <div className={styles.page}>
-      <ProxyHeader></ProxyHeader>
+      <ProxyHeader onSearch={setFilter}></ProxyHeader>
 
       <div className={styles.main}>
         <div className={styles.list}>
@@ -59,7 +61,7 @@ function App() {
             statusCode={'Status'}
             contentType={'Type'}
           />
-          {messageHistory.map((msg) => (
+          {list.map((msg) => (
             <ProxyItem
               onClick={() => setMessage(msg)}
               active={msg.id === message?.id}
