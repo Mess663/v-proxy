@@ -1,6 +1,6 @@
 # v-proxy
 
-简单易用的 Web http/https 抓包工具
+简单易用的跨端 http/https 抓包工具
 
 ## 安装
 ```
@@ -9,7 +9,7 @@
     pnpm i -g v-proxy
 ```
 
-## 试用
+## 使用
 ```
     v-proxy [port = 8899] 
 
