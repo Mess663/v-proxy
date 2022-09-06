@@ -107,11 +107,6 @@ const setWebSocketServer = () => {
 const setWebServer = () => {
     const app = new Koa();
 
-    // app.use(staticCache(__dirname + '/src/public', {
-    //     maxAge: 365 * 24 * 60 * 60,
-    //     prefix: 'public'
-    // }))
-    // 注册路由
     app.use(
         cors({
             origin: '*',
@@ -121,6 +116,7 @@ const setWebServer = () => {
             exposeHeaders: ['WWW-Authenticate', 'Server-Authorization'] //设置获取其他自定义字段
         })
     );
+    // 注册路由
     app.use(router.routes())
     app.use(staticServe('./src/web/dist'))
     app.use(staticServe('./src/public'))
@@ -129,7 +125,11 @@ const setWebServer = () => {
         console.error('[static]', e.message)
     })
 
-    app.listen(80)
+    const webPort = process.argv[2] || 8899 
+
+    console.log('抓包访问地址：localhost:'+webPort)
+
+    app.listen(webPort)
 }
 
 const setProxyServer = () => {
@@ -140,9 +140,8 @@ const setProxyServer = () => {
         .on('error', (err) => {
             console.error('[代理服务]' + err.message)
         })
-        .listen(8080, '0.0.0.0', () => console.log(`代理启动成功，监听0.0.0.0:${port}\n`));
+        .listen(8080, '0.0.0.0', () => console.log(`代理启动成功，监听：0.0.0.0:${port}\n`));
 }
-
 
 const main = () => {
     setWebServer()
