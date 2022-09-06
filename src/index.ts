@@ -101,7 +101,7 @@ const setWebSocketServer = () => {
     app.on('error', (err) => {
         console.error('[ws setup]', err.message)
     })
-    app.listen(82)
+    app.listen(8282)
 }
 
 const setWebServer = () => {

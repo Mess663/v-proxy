@@ -13,6 +13,7 @@ const ProxyInfo = () => {
     <Space direction='vertical'>
       <Text strong>Host: {data?.host}</Text>
       <Text strong>IP：{data?.ip}</Text>
+      <Text strong>Port：{data?.port}</Text>
       <Text strong>Pid: {data?.pid}</Text>
     </Space>
   </div>;
