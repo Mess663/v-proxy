@@ -1,12 +1,19 @@
 {
   "name": "v-proxy",
-  "version": "1.0.0",
-  "description": "http/https proxy writed by rust",
-  "main": "index.js",
+  "version": "0.0.2",
+  "description": "简单易用的跨端抓包工具",
+  "main": "lib/index.js",
+  "bin": "bin/v-proxy",
   "scripts": {
     "start": "nodemon --transpileOnly src/index.ts",
     "dev": "ts-node --transpileOnly src/index.ts",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "build:compile": "tsc",
+    "build:web": "cd src/web/ && npm run build && cd ../../",
+    "copy:public": "shx mkdir -p ./lib/public && shx cp -r ./src/public/* ./lib/public",
+    "copy:web": "shx mkdir -p ./lib/web/dist && shx cp -r ./src/web/dist/* ./lib/web/dist",
+    "build:copy": "npm run copy:public && npm run copy:web",
+    "build": "shx rm -rf lib && npm run build:compile && npm run build:copy",
+    "publish": "npm run build && npm publish"
   },
   "repository": {
     "type": "git",
@@ -46,6 +53,7 @@
     "mkdirp": "^1.0.4",
     "node-forge": "^1.3.1",
     "nodemon": "^2.0.19",
+    "shx": "^0.3.4",
     "ts-node": "^10.9.1",
     "typescript": "^4.7.4",
     "ws": "^8.8.1"

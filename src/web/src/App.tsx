@@ -22,23 +22,16 @@ const getContentType = (t: string) => t?.slice(0, t.indexOf(';') + 1 || t.length
 
 const socketUrl = 'ws://127.0.0.1:82/proxy'
 function App() {
-  // const [messageHistory, setMessageHistory] = useState<ProxyData[]>([]);
+  const [messageHistory, setMessageHistory] = useState<ProxyData[]>([]);
   const [message, setMessage] = useState<ProxyData>()
-  const [messageHistory, setLocal] = useLocalStorageState<ProxyData[]>('message')
   const [filter, setFilter] = useState('')
   const list = useMemo(() => messageHistory.filter(o => (o.req.hostname + o.req.path).includes(filter)), [messageHistory, filter])
 
-  // useWebSocket(socketUrl, {
-  //   onMessage(event) {
-  //     setLocal(o => {
-  //       console.log(o)
-  //       const d = JSON.parse(event.data)
-  //       if (!o) return [d]
-  //       return [...o, d]
-  //     })
-  //     setMessageHistory(o => [JSON.parse(event.data)].concat(o))
-  //   },
-  // });
+  useWebSocket(socketUrl, {
+    onMessage(event) {
+      setMessageHistory(o => [JSON.parse(event.data)].concat(o))
+    },
+  });
 
   // const connectionStatus = {
   //   [ReadyState.CONNECTING]: 'Connecting',
