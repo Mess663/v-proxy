@@ -53,7 +53,7 @@ export function createFakeHttpsWebSite(domain: string, successFun: (p: number) =
             httpsRes.on('data', (chunk) => {
                 data = data + chunk.toString();
             });
-        
+
             httpsRes.on('end', () => {
                 // 拿到目标服务器的所有数据，转发给客户端
                 res.write(data)
@@ -75,6 +75,10 @@ export function createFakeHttpsWebSite(domain: string, successFun: (p: number) =
                 } 
             });
         });
+
+        httpsReq.on('timeout', (e) => {
+            console.log('[https timeout]', e)
+        })
 
         httpsReq.end()
     });

@@ -76,8 +76,13 @@ const connect = (cReq: IncomingMessage, cltSocket: stream.Duplex, head) => {
             srvSocket.pipe(cltSocket);
             cltSocket.pipe(srvSocket);
         });
+        srvSocket.on('timeout', (e) => {
+            console.error('[connect timeout]', e);
+            cltSocket.write('HTTP/1.1 200 Connection Established\r\n\r\n');
+        })
         srvSocket.on('error', (e) => {
             console.error('[https request]', e);
+            cltSocket.write('HTTP/1.1 200 Connection Established\r\n\r\n');
         });
     }, wsInstance)
 }
@@ -143,6 +148,10 @@ const main = () => {
     setWebServer()
     setWebSocketServer()
     setProxyServer()
+
+    process.on('uncaughtException', function(err) {
+        console.error('Error caught in uncaughtException event:', err);
+    });
 }
 
 main()
