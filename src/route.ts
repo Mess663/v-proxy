@@ -5,14 +5,21 @@ import os from 'os'
 const router = new Router()
 
 router.get('/local-info', ctx => {
-    ctx.header['access-control-allow-credentials'] = 'true'
-    ctx.header['access-control-allow-methods'] = 'Get'
-    ctx.header['allow']
-    ctx.body = JSON.stringify({status: 200, data: {
-        ip: ip.address(),
-        pid: process.pid, 
-        host: os.hostname()
-    }}) 
+    if (ctx.method === 'OPTIONS') {
+        ctx.body = 200 
+    } else {
+        ctx.header['access-control-allow-credentials'] = 'true'
+        ctx.header['access-control-allow-methods'] = 'Get'
+        ctx.header['access-control-allow-origin'] = '*'
+        ctx.header["Access-Control-Allow-Headers"] =  "Access-Control-Allow-Headers, Origin,Accept, X-Requested-With, Content-Type, Access-Control-Request-Method, Access-Control-Request-Headers" 
+        ctx.body = JSON.stringify({status: 200, data: {
+            ip: ip.address(),
+            pid: process.pid, 
+            host: os.hostname(),
+            port: 8080,
+        }}) 
+    }
+
 })
 
 export default router
