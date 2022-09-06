@@ -1,0 +1,61 @@
+{
+  "name": "v-proxy",
+  "version": "0.0.2",
+  "description": "简单易用的跨端抓包工具",
+  "main": "lib/index.js",
+  "bin": "bin/v-proxy",
+  "scripts": {
+    "start": "nodemon --transpileOnly src/index.ts",
+    "dev": "ts-node --transpileOnly src/index.ts",
+    "build:compile": "tsc",
+    "build:web": "cd src/web/ && npm run build && cd ../../",
+    "copy:public": "shx mkdir -p ./lib/public && shx cp -r ./src/public/* ./lib/public",
+    "copy:web": "shx mkdir -p ./lib/web/dist && shx cp -r ./src/web/dist/* ./lib/web/dist",
+    "build:copy": "npm run copy:public && npm run copy:web",
+    "build": "shx rm -rf lib && npm run build:compile && npm run build:copy",
+    "publish": "npm run build && npm publish"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Mess663/v-proxy.git"
+  },
+  "author": "VaporSpace",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/Mess663/v-proxy/issues"
+  },
+  "homepage": "https://github.com/Mess663/v-proxy#readme",
+  "dependencies": {
+    "@types/co": "^4.6.3",
+    "@types/ip": "^1.1.0",
+    "@types/koa": "^2.13.5",
+    "@types/koa-route": "^3.2.5",
+    "@types/koa-router": "^7.4.4",
+    "@types/koa-static": "^4.0.2",
+    "@types/koa-static-cache": "^5.1.1",
+    "@types/koa-websocket": "^5.0.7",
+    "@types/koa2-cors": "^2.0.2",
+    "@types/lodash": "^4.14.184",
+    "@types/mkdirp": "^1.0.2",
+    "@types/node": "^18.6.4",
+    "@types/node-forge": "^1.0.4",
+    "co": "^4.6.0",
+    "eslint": "^8.21.0",
+    "ip": "^1.1.8",
+    "koa": "^2.13.4",
+    "koa-route": "^3.2.0",
+    "koa-router": "^12.0.0",
+    "koa-static": "^5.0.0",
+    "koa-static-cache": "^5.1.4",
+    "koa-websocket": "^7.0.0",
+    "koa2-cors": "^2.0.6",
+    "lodash": "^4.17.21",
+    "mkdirp": "^1.0.4",
+    "node-forge": "^1.3.1",
+    "nodemon": "^2.0.19",
+    "shx": "^0.3.4",
+    "ts-node": "^10.9.1",
+    "typescript": "^4.7.4",
+    "ws": "^8.8.1"
+  }
+}
