@@ -25,7 +25,6 @@ function App() {
 
   useWebSocket(socketUrl, {
     onMessage(event) {
-      console.log('------', event)
       setMessageHistory(o => [JSON.parse(event.data)].concat(o))
     },
   });
