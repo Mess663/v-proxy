@@ -11,5 +11,12 @@
 
 ## Use
 ```
-    v-proxy // 直接调用
+    v-proxy [port = 8899] 
+
+    port 抓包页面端口，默认 8899
 ```
+
+## 功能展示
+![](./src/static/readme/1.png)
+![](./src/static/readme/2.png)
+![](./src/static/readme/3.png)
