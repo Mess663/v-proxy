@@ -2,14 +2,14 @@
 
 简单易用的 Web http/https 抓包工具
 
-## Install
+## 安装
 ```
     npm i -g v-proxy
     yarn add -g v-proxy
     pnpm i -g v-proxy
 ```
 
-## Use
+## 试用
 ```
     v-proxy [port = 8899] 
 
