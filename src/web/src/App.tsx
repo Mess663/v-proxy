@@ -6,6 +6,8 @@ import ProxyItem from './biz_components/ProxyItem';
 import ProxyHeader from './biz_components/ProxyHeader';
 import { VerticalLeftOutlined } from '@ant-design/icons'
 import ProxyDetail from './biz_components/ProxyDetail';
+import { useRequest } from 'ahooks';
+import { getLocalInfo } from './server/network';
 
 interface ProxyData { id: number, req: Request, res: Response }
 
@@ -16,14 +18,14 @@ const string2Base64 = (s: string) => {
 
 const getContentType = (t: string) => t?.slice(0, t.indexOf(';') + 1 || t.length)
 
-const socketUrl = 'ws://127.0.0.1:8282/proxy'
 function App() {
   const [messageHistory, setMessageHistory] = useState<ProxyData[]>([]);
   const [message, setMessage] = useState<ProxyData>()
   const [filter, setFilter] = useState('')
   const list = useMemo(() => messageHistory.filter(o => (o.req.hostname + o.req.path).includes(filter)), [messageHistory, filter])
+  const { data } = useRequest(getLocalInfo)
 
-  useWebSocket(socketUrl, {
+  useWebSocket(`ws://127.0.0.1:${data?.port}/proxy`, {
     onMessage(event) {
       setMessageHistory(o => [JSON.parse(event.data)].concat(o))
     },
