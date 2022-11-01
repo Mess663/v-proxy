@@ -6,9 +6,9 @@ module.exports = {
     extends: [
         'airbnb-base',
     ],
-    "import/extensions": [{
-        ts: 'never'
-    }],
+    // "import/extensions": [{
+    //     ts: 'never'
+    // }],
     parser: '@typescript-eslint/parser',
     parserOptions: {
         ecmaVersion: 'latest',
@@ -20,5 +20,6 @@ module.exports = {
     rules: {
         '@typescript-eslint/indent': ['error', 4],
         indent: ['error', 4],
+        'no-console': 0,
     },
 };
