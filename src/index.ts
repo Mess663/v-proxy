@@ -66,16 +66,16 @@ const connect = (cReq: IncomingMessage, cltSocket: stream.Duplex, head) => {
 
     if (!u.port || !u.hostname) return;
 
+    cltSocket.on('error', (err) => {
+        console.log('on cennct cltSocket err: ', cReq.url, err);
+    });
+
     createFakeHttpsWebSite(u.hostname, (port: number) => {
         const srvSocket = net.connect(port, '127.0.0.1', () => {
             cltSocket.write('HTTP/1.1 200 Connection Established\r\n\r\n');
             srvSocket.write(head);
             srvSocket.pipe(cltSocket);
             cltSocket.pipe(srvSocket);
-        });
-        srvSocket.on('timeout', (err) => {
-            console.error('[https connect timeout]', err);
-            cltSocket.write('HTTP/1.1 200 Connection Established\r\n\r\n');
         });
         srvSocket.on('error', (err) => {
             console.error('[https connect error]', err);

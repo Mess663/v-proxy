@@ -127,7 +127,7 @@ export function createFakeHttpsWebSite(
         const urlObject = url.parse(req.url || '');
         const hostName = req.headers.host || '';
         const options = {
-            protocol: 'https:',
+            // protocol: 'https',
             hostname: hostName.split(':')[0],
             method: req.method,
             port: hostName.split(':')[1] || 443,
@@ -136,7 +136,7 @@ export function createFakeHttpsWebSite(
         };
 
         // 拿着客户端的请求参数转发给目标服务器
-        const httpsReq = https.request(`https://${options.hostname}${options.path}`, (httpsRes) => {
+        const httpsReq = https.request(options, (httpsRes) => {
             res.writeHead(httpsRes.statusCode || 500, httpsRes.headers);
 
             let data = '';
