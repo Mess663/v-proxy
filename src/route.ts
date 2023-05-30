@@ -18,7 +18,7 @@ router.get('/local-info', (ctx) => {
                 ip: getIpList(),
                 pid: process.pid,
                 host: os.hostname(),
-                port: 8080,
+                port: process.argv[2] || 8899,
             },
         });
     }

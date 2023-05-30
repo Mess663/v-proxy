@@ -12,7 +12,12 @@ const ProxyInfo = () => {
   return <div className={css.container}>
     <Space direction='vertical'>
       <Text strong>Host: {data?.host}</Text>
-      <Text strong>IP：{data?.ip}</Text>
+      <Text strong>
+        <ul>
+          IP：
+          {data?.ip.map((o: string) => <li key={o}>{o}</li>)}
+        </ul>
+      </Text>
       <Text strong>Port：{data?.port}</Text>
       <Text strong>Pid: {data?.pid}</Text>
     </Space>
