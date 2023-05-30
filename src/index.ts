@@ -7,11 +7,11 @@ import route from 'koa-route';
 import websockify from 'koa-websocket';
 import cors from 'koa2-cors';
 import staticServe from 'koa-static';
-import { uniqueId } from 'lodash';
+import { isObject, uniqueId } from 'lodash';
 import router from './route';
 import { createFakeHttpsWebSite } from './https_proxy';
 
-let wsInstance: WebSocket | null = null;
+let wsInstance: | null = null;
 
 const request = (cReq: http.IncomingMessage, cRes: http.ServerResponse) => {
     if (!cReq.url) return;
@@ -122,14 +122,21 @@ const setProxyServer = (httpServer: http.Server) => {
 };
 
 const main = () => {
-    const app = websockify(new Koa(), {});
+    const app = new Koa();
+    const wsApp = websockify(new Koa(), {});
     const server = http.createServer(app.callback());
 
     setWebServer(app);
-    // setWebSocketServer(app);
+    setWebSocketServer(wsApp);
     setProxyServer(server);
 
     const webPort = process.argv[2] || 8899;
+    const wsServer = wsApp.listen(0, () => {
+        const address = wsServer.address();
+        if (isObject(address)) {
+            global.wsPort = address?.port;
+        }
+    });
     server.listen(webPort, () => console.log(`代理启动成功，监听：127.0.0.1:${webPort}\n`));
 
     process.on('uncaughtException', (err) => {

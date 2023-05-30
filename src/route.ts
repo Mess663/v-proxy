@@ -19,6 +19,7 @@ router.get('/local-info', (ctx) => {
                 pid: process.pid,
                 host: os.hostname(),
                 port: process.argv[2] || 8899,
+                wsPort: global.wsPort,
             },
         });
     }

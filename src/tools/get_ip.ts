@@ -1,5 +1,6 @@
 import os from 'os';
 
+// eslint-disable-next-line import/prefer-default-export
 export const getIpList = () => {
     const ipList: string[] = [];
     const ifaces = os.networkInterfaces();

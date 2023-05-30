@@ -13,7 +13,8 @@
     "copy:web": "shx mkdir -p ./lib/web/dist && shx cp -r ./src/web/dist/* ./lib/web/dist",
     "build:copy": "npm run copy:public && npm run copy:web",
     "build": "shx rm -rf lib && npm run build:compile && npm run build:copy",
-    "publish": "npm run build && npm publish"
+    "publish": "npm run build && npm publish",
+    "create_crt": "ts-node --transpileOnly src/create_root_cert.ts"
   },
   "repository": {
     "type": "git",

@@ -4,7 +4,7 @@ import { QRCodeSVG } from 'qrcode.react';
 import { useRequest } from 'ahooks';
 import { getLocalInfo } from '../../server/network';
 
-const certUrl = 'http://localhost/vProxy.crt'
+const certUrl = '/vProxy.crt'
 
 const HttpsCert = () => {
   const { data } = useRequest(getLocalInfo)
