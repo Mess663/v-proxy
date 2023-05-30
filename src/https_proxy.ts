@@ -103,6 +103,7 @@ export function createFakeHttpsWebSite(
     successFun: (p: number) => void,
     wsInstance: WebSocket | null,
 ) {
+    console.log('createFakeHttpsWebSite', domain);
     // 拿到受信根证书签发的子证书及生成的私钥
     const fakeCertObj = createFakeCertificateByDomain(rootCaKey, rootCaCert, domain);
 
@@ -127,7 +128,7 @@ export function createFakeHttpsWebSite(
         const urlObject = url.parse(req.url || '');
         const hostName = req.headers.host || '';
         const options = {
-            // protocol: 'https',
+            // protocol: 'https:',
             hostname: hostName.split(':')[0],
             method: req.method,
             port: hostName.split(':')[1] || 443,
@@ -135,8 +136,11 @@ export function createFakeHttpsWebSite(
             headers: req.headers,
         };
 
+        const p = `https://${options.hostname}${options.path}`;
+
         // 拿着客户端的请求参数转发给目标服务器
         const httpsReq = https.request(options, (httpsRes) => {
+            console.log(p, '请求成功');
             res.writeHead(httpsRes.statusCode || 500, httpsRes.headers);
 
             let data = '';
@@ -148,6 +152,7 @@ export function createFakeHttpsWebSite(
                 // 拿到目标服务器的所有数据，转发给客户端
                 res.write(data);
                 res.end();
+                console.log(p, '请求结束');
 
                 fakeServer.close();
 
@@ -171,7 +176,7 @@ export function createFakeHttpsWebSite(
         });
 
         httpsReq.on('error', (err) => {
-            console.error('[https request error]', err);
+            console.error(p, '[https request error]', err);
         });
 
         httpsReq.end();

@@ -61,7 +61,7 @@ const request = (cReq: http.IncomingMessage, cRes: http.ServerResponse) => {
     cReq.pipe(pReq);
 };
 
-const connect = (cReq: IncomingMessage, cltSocket: stream.Duplex, head) => {
+const connect = (cReq: IncomingMessage, cltSocket: stream.Duplex, head: Buffer) => {
     const u = url.parse(`http://${cReq.url}`);
 
     if (!u.port || !u.hostname) return;
@@ -126,11 +126,11 @@ const main = () => {
     const server = http.createServer(app.callback());
 
     setWebServer(app);
-    setWebSocketServer(app);
+    // setWebSocketServer(app);
     setProxyServer(server);
 
     const webPort = process.argv[2] || 8899;
-    server.listen(webPort, () => console.log(`代理启动成功，监听：0.0.0.0:${webPort}\n`));
+    server.listen(webPort, () => console.log(`代理启动成功，监听：127.0.0.1:${webPort}\n`));
 
     process.on('uncaughtException', (err) => {
         console.error('Error caught in uncaughtException event:', err);
