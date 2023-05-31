@@ -24,6 +24,11 @@
     "url": "git+https://github.com/Mess663/v-proxy.git"
   },
   "author": "VaporSpace",
+  "keywords": [
+    "proxy",
+    "http",
+    "https"
+  ],
   "license": "MIT",
   "bugs": {
     "url": "https://github.com/Mess663/v-proxy/issues"

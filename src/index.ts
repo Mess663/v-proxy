@@ -7,7 +7,7 @@ import route from 'koa-route';
 import websockify from 'koa-websocket';
 import cors from 'koa2-cors';
 import staticServe from 'koa-static';
-import { isObject, omit, uniqueId } from 'lodash';
+import { isObject, uniqueId } from 'lodash';
 import needle from 'needle';
 import router from './route';
 import { createFakeHttpsWebSite } from './https_proxy';
