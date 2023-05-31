@@ -99,19 +99,19 @@ const setWebSocketServer = () => {
 };
 
 const setWebServer = (app: Koa<Koa.DefaultState, Koa.DefaultContext>) => {
-    app
-        .use(
-            cors({
-                origin: '*',
-                credentials: true, // 是否允许发送Cookie
-                allowMethods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'], // 设置所允许的HTTP请求方法
-                allowHeaders: ['Content-Type', 'Authorization', 'Accept'], // 设置服务器支持的所有头信息字段
-                exposeHeaders: ['WWW-Authenticate', 'Server-Authorization'], // 设置获取其他自定义字段
-            }),
-        )
-        .use(router.routes())
-        .use(staticServe('./src/web/dist'))
-        .use(staticServe('./src/public'));
+    app.use(
+        cors({
+            origin: '*',
+            credentials: true, // 是否允许发送Cookie
+            allowMethods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'], // 设置所允许的HTTP请求方法
+            allowHeaders: ['Content-Type', 'Authorization', 'Accept'], // 设置服务器支持的所有头信息字段
+            exposeHeaders: ['WWW-Authenticate', 'Server-Authorization'], // 设置获取其他自定义字段
+        }),
+    );
+    // 注册路由
+    app.use(router.routes());
+    app.use(staticServe('./src/web/dist'));
+    app.use(staticServe('./src/public'));
 };
 
 // http、https代理
@@ -126,8 +126,7 @@ const setProxyServer = (
         if (!isLocalHost) {
             await request(ctx);
         } else {
-            console.log('本地请求：', ctx.req.url);
-            next();
+            await next();
         }
     });
 
@@ -140,7 +139,7 @@ const setProxyServer = (
 
 const startLog = () => {
     const ips = getIpList().map((o) => `${o}:${port}`);
-    console.log(chalk.green('代理启动成功，监听：'));
+    console.log(chalk.green('v-proxy启动成功: '));
 
     ips.forEach((o) => {
         const s = `http://${o}`;
