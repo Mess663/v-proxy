@@ -1,6 +1,6 @@
 {
   "name": "v-proxy",
-  "version": "0.0.3",
+  "version": "0.0.5",
   "description": "简单易用的跨端抓包工具",
   "main": "lib/index.js",
   "bin": {
