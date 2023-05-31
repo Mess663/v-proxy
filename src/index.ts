@@ -9,11 +9,13 @@ import cors from 'koa2-cors';
 import staticServe from 'koa-static';
 import { isObject, uniqueId } from 'lodash';
 import needle from 'needle';
+import chalk from 'chalk';
 import router from './route';
 import { createFakeHttpsWebSite } from './https_proxy';
-import { isLocalWeb } from './tools/ip';
+import { getIpList, isLocalWeb } from './tools/ip';
 
 let wsInstance: WebSocket | null = null;
+const port = process.argv[2] || 8899;
 
 const connect = (cReq: IncomingMessage, cltSocket: stream.Duplex, head: Buffer) => {
     const u = url.parse(`http://${cReq.url}`);
@@ -24,8 +26,8 @@ const connect = (cReq: IncomingMessage, cltSocket: stream.Duplex, head: Buffer) 
         console.log('on cennct cltSocket err: ', cReq.url, err);
     });
 
-    createFakeHttpsWebSite(u.hostname, (port: number) => {
-        const srvSocket = net.connect(port, '127.0.0.1', () => {
+    createFakeHttpsWebSite(u.hostname, (tempPort: number) => {
+        const srvSocket = net.connect(tempPort, '127.0.0.1', () => {
             cltSocket.write('HTTP/1.1 200 Connection Established\r\n\r\n');
             srvSocket.write(head);
             srvSocket.pipe(cltSocket);
@@ -85,7 +87,7 @@ const setWebSocketServer = () => {
         ctx.websocket.on('error', (err) => {
             console.log('[ws错误]', err);
             ctx.websocket.terminate();
-            setWebSocketServer(app);
+            setWebSocketServer();
         });
     }));
     const wsServer = app.listen(0, () => {
@@ -97,19 +99,19 @@ const setWebSocketServer = () => {
 };
 
 const setWebServer = (app: Koa<Koa.DefaultState, Koa.DefaultContext>) => {
-    app.use(
-        cors({
-            origin: '*',
-            credentials: true, // 是否允许发送Cookie
-            allowMethods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'], // 设置所允许的HTTP请求方法
-            allowHeaders: ['Content-Type', 'Authorization', 'Accept'], // 设置服务器支持的所有头信息字段
-            exposeHeaders: ['WWW-Authenticate', 'Server-Authorization'], // 设置获取其他自定义字段
-        }),
-    );
-    // 注册路由
-    app.use(router.routes());
-    app.use(staticServe('./src/web/dist'));
-    app.use(staticServe('./src/public'));
+    app
+        .use(
+            cors({
+                origin: '*',
+                credentials: true, // 是否允许发送Cookie
+                allowMethods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'], // 设置所允许的HTTP请求方法
+                allowHeaders: ['Content-Type', 'Authorization', 'Accept'], // 设置服务器支持的所有头信息字段
+                exposeHeaders: ['WWW-Authenticate', 'Server-Authorization'], // 设置获取其他自定义字段
+            }),
+        )
+        .use(router.routes())
+        .use(staticServe('./src/web/dist'))
+        .use(staticServe('./src/public'));
 };
 
 // http、https代理
@@ -117,7 +119,6 @@ const setProxyServer = (
     httpServer: http.Server,
     app: Koa<Koa.DefaultState, Koa.DefaultContext>,
 ) => {
-    const port = process.argv[2] || 8899;
     app.use(async (ctx, next) => {
         const reqHost = ctx.request.header.host;
         const isLocalHost = reqHost && isLocalWeb(port, reqHost);
@@ -125,6 +126,7 @@ const setProxyServer = (
         if (!isLocalHost) {
             await request(ctx);
         } else {
+            console.log('本地请求：', ctx.req.url);
             next();
         }
     });
@@ -136,8 +138,18 @@ const setProxyServer = (
         });
 };
 
+const startLog = () => {
+    const ips = getIpList().map((o) => `${o}:${port}`);
+    console.log(chalk.green('代理启动成功，监听：'));
+
+    ips.forEach((o) => {
+        const s = `http://${o}`;
+        console.log(`    ${chalk.underline(chalk.green(s))}`);
+    });
+    console.log(chalk.green('请使用上面的ip和端口来设置代理，抓包和安装证书请打开上面地址'));
+};
+
 const main = () => {
-    const port = process.argv[2] || 8899;
     const app = new Koa();
     const server = http.createServer(app.callback());
 
@@ -145,7 +157,7 @@ const main = () => {
     setProxyServer(server, app);
     setWebServer(app);
 
-    server.listen(port, () => console.log(`代理启动成功，监听：127.0.0.1:${port}\n`));
+    server.listen(port, startLog);
 
     process.on('uncaughtException', (err) => {
         console.error('Error caught in uncaughtException event:', err);
