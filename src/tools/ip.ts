@@ -18,3 +18,13 @@ export const getIpList = () => {
     ipList.unshift('127.0.0.1');
     return ipList;
 };
+
+/**
+ * 判断是否为本地web服务
+ * @param port
+ * @param targetIp
+ */
+export const isLocalWeb = (port: string | number, targetIp: string) => {
+    const ipList = getIpList().map((ip) => `${ip}:${port}`);
+    return ipList.includes(targetIp);
+};

@@ -1,6 +1,6 @@
 import Router from 'koa-router';
 import os from 'os';
-import { getIpList } from './tools/get_ip';
+import { getIpList } from './tools/ip';
 
 const router = new Router();
 

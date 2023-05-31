@@ -7,13 +7,19 @@ import route from 'koa-route';
 import websockify from 'koa-websocket';
 import cors from 'koa2-cors';
 import staticServe from 'koa-static';
-import { isObject, uniqueId } from 'lodash';
+import { isObject, omit, uniqueId } from 'lodash';
+import needle from 'needle';
 import router from './route';
 import { createFakeHttpsWebSite } from './https_proxy';
+import { isLocalWeb } from './tools/ip';
 
-let wsInstance: | null = null;
+let wsInstance: WebSocket | null = null;
 
-const request = (cReq: http.IncomingMessage, cRes: http.ServerResponse) => {
+const request = (
+    cReq: http.IncomingMessage,
+    cRes: http.ServerResponse,
+    ctx,
+) => {
     if (!cReq.url) return;
 
     const u = url.parse(cReq.url);
@@ -27,7 +33,7 @@ const request = (cReq: http.IncomingMessage, cRes: http.ServerResponse) => {
     };
 
     const pReq = http.request(options, (pRes) => {
-        cRes.writeHead(pRes.statusCode || 500, pRes.headers);
+        // cRes.writeHead(pRes.statusCode || 500, pRes.headers);
         pRes.pipe(cRes);
 
         let data = '';
@@ -40,11 +46,18 @@ const request = (cReq: http.IncomingMessage, cRes: http.ServerResponse) => {
             pReq.destroy();
         });
 
+        pRes.on('end', () => {
+            console.log('----- end');
+        });
+
         if (wsInstance) {
             pRes.on('end', () => {
                 wsInstance?.send(JSON.stringify({
                     id: uniqueId(),
-                    req: options,
+                    req: {
+                        protocol: 'http',
+                        ...options,
+                    },
                     res: {
                         statusCode: pRes.statusCode,
                         data,
@@ -53,12 +66,14 @@ const request = (cReq: http.IncomingMessage, cRes: http.ServerResponse) => {
                 }));
             });
         }
-    }).on('error', (err) => {
+    });
+    pReq.on('error', (err) => {
         console.error('[http proxy request]', err);
         cRes.end();
     });
 
     cReq.pipe(pReq);
+    pReq.end();
 };
 
 const connect = (cReq: IncomingMessage, cltSocket: stream.Duplex, head: Buffer) => {
@@ -85,7 +100,8 @@ const connect = (cReq: IncomingMessage, cltSocket: stream.Duplex, head: Buffer) 
 };
 
 // 启动ws服务，发送代理条目
-const setWebSocketServer = (app: websockify.App<Koa.DefaultState, Koa.DefaultContext>) => {
+const setWebSocketServer = () => {
+    const app = websockify(new Koa(), {});
     app.ws.use(route.all('/proxy', (ctx) => {
         wsInstance = ctx.websocket;
 
@@ -95,6 +111,12 @@ const setWebSocketServer = (app: websockify.App<Koa.DefaultState, Koa.DefaultCon
             setWebSocketServer(app);
         });
     }));
+    const wsServer = app.listen(0, () => {
+        const address = wsServer.address();
+        if (isObject(address)) {
+            global.wsPort = address?.port;
+        }
+    });
 };
 
 const setWebServer = (app: Koa<Koa.DefaultState, Koa.DefaultContext>) => {
@@ -114,30 +136,57 @@ const setWebServer = (app: Koa<Koa.DefaultState, Koa.DefaultContext>) => {
 };
 
 // http、https代理
-const setProxyServer = (httpServer: http.Server) => {
-    httpServer.on('connect', connect)
+const setProxyServer = (
+    httpServer: http.Server,
+) => {
+    httpServer
+        // .on('request', request)
+        .on('connect', connect)
         .on('error', (err) => {
             console.error(`[代理服务]${err.message}`);
         });
 };
 
 const main = () => {
+    const port = process.argv[2] || 8899;
     const app = new Koa();
-    const wsApp = websockify(new Koa(), {});
     const server = http.createServer(app.callback());
+    // const server = http.createServer();
 
-    setWebServer(app);
-    setWebSocketServer(wsApp);
-    setProxyServer(server);
+    setWebSocketServer();
 
-    const webPort = process.argv[2] || 8899;
-    const wsServer = wsApp.listen(0, () => {
-        const address = wsServer.address();
-        if (isObject(address)) {
-            global.wsPort = address?.port;
+    app.use(async (ctx, next) => {
+        const reqHost = ctx.request.header.host;
+
+        if (reqHost && isLocalWeb(port, reqHost)) {
+            await next();
+        } else {
+            const method = ctx.req.method || 'get';
+
+            try {
+                const res = await needle(method, ctx.req.url, ctx.req.headers);
+                // if (ctx.req.url?.includes('system.css')) {
+                //     console.log(res.body);
+                // }
+                ctx.res.writeHead(res.statusCode || 500, res.headers);
+                // res.pipe(ctx.res);
+                ctx.body = res.body;
+            } catch (error) {
+                console.log('needle err: ', error);
+            } finally {
+                await next();
+            }
+
+            // request(ctx.req, ctx.res, ctx);
         }
     });
-    server.listen(webPort, () => console.log(`代理启动成功，监听：127.0.0.1:${webPort}\n`));
+
+    setWebServer(app);
+    setProxyServer(server);
+
+    // app.listen(port);
+
+    server.listen(port, () => console.log(`代理启动成功，监听：127.0.0.1:${port}\n`));
 
     process.on('uncaughtException', (err) => {
         console.error('Error caught in uncaughtException event:', err);

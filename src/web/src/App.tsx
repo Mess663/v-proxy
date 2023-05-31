@@ -25,7 +25,7 @@ function App() {
   const list = useMemo(() => messageHistory.filter(o => (o.req.hostname + o.req.path).includes(filter)), [messageHistory, filter])
   const { data } = useRequest(getLocalInfo)
 
-  useWebSocket(`ws://127.0.0.1:${data?.port}/proxy`, {
+  useWebSocket(`ws://127.0.0.1:${data?.wsPort}/proxy`, {
     onMessage(event) {
       setMessageHistory(o => [JSON.parse(event.data)].concat(o))
     },
@@ -51,7 +51,8 @@ function App() {
             statusCode={'Status'}
             contentType={'Type'}
           />
-          {list.map((msg) => (
+          {list.map((msg) => {
+            return (
             <ProxyItem
               onClick={() => setMessage(msg)}
               active={msg.id === message?.id}
@@ -60,7 +61,8 @@ function App() {
               statusCode={msg.res.statusCode || 500}
               contentType={getContentType(msg.res['content-type'])}
             />
-          ))}
+          )
+          })}
         </div>
 
         {

@@ -126,8 +126,8 @@ export function createFakeHttpsWebSite(
         // 解析客户端请求
         const urlObject = url.parse(req.url || '');
         const hostName = req.headers.host || '';
+
         const options = {
-            // protocol: 'https:',
             hostname: hostName.split(':')[0],
             method: req.method,
             port: hostName.split(':')[1] || 443,
@@ -156,7 +156,10 @@ export function createFakeHttpsWebSite(
                 if (wsInstance) {
                     wsInstance.send(JSON.stringify({
                         id: uniqueId(),
-                        req: options,
+                        req: {
+                            protocol: 'https',
+                            ...options,
+                        },
                         res: {
                             statusCode: httpsRes.statusCode,
                             data,
