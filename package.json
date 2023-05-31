@@ -3,7 +3,10 @@
   "version": "0.0.3",
   "description": "简单易用的跨端抓包工具",
   "main": "lib/index.js",
-  "bin": "bin/v-proxy",
+  "bin": {
+    "vp": "bin/v-proxy",
+    "v-proxy": "bin/v-proxy"
+  },
   "scripts": {
     "start": "clear && nodemon --transpileOnly src/index.ts",
     "dev": "ts-node --transpileOnly src/index.ts",
