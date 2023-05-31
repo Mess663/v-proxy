@@ -10,11 +10,12 @@ import staticServe from 'koa-static';
 import { isObject, uniqueId } from 'lodash';
 import needle from 'needle';
 import chalk from 'chalk';
+import * as ws from 'ws';
 import router from './route';
 import { createFakeHttpsWebSite } from './https_proxy';
 import { getIpList, isLocalWeb } from './tools/ip';
 
-let wsInstance: WebSocket | null = null;
+let wsInstance: WebSocket | null | ws = null;
 const port = process.argv[2] || 8899;
 
 const connect = (cReq: IncomingMessage, cltSocket: stream.Duplex, head: Buffer) => {
@@ -43,10 +44,13 @@ const connect = (cReq: IncomingMessage, cltSocket: stream.Duplex, head: Buffer) 
 const request = async (
     ctx: Koa.ParameterizedContext<Koa.DefaultState, Koa.DefaultContext, any>,
 ) => {
-    const method = ctx.req.method || 'get';
+    const method = (ctx.req.method || 'get') as 'get';
 
     try {
-        const res = await needle(method, ctx.req.url, ctx.req.headers);
+        if (!ctx.req.url) throw new Error('url is empty');
+        const res = await needle(method, ctx.req.url, ctx.req.headers, {
+            timeout: 10000,
+        });
         ctx.res.writeHead(res.statusCode || 500, res.headers);
         console.dir(res.headers);
         ctx.body = res.body;

@@ -140,11 +140,11 @@ export function createFakeHttpsWebSite(
 
         const p = `https://${options.hostname}${options.path}`;
 
-        const method = req.method || 'get';
+        const method = (req.method || 'get') as 'get';
 
         try {
             // 拿着客户端的请求参数转发给目标服务器
-            const httpsRes = await needle(method, p, req.headers, {
+            const httpsRes = await needle(method, p, options.headers, {
                 timeout: 10000,
             });
             // 拿到目标服务器的所有数据，转发给客户端
