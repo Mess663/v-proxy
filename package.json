@@ -5,7 +5,7 @@
   "main": "lib/index.js",
   "bin": "bin/v-proxy",
   "scripts": {
-    "start": "nodemon --transpileOnly src/index.ts",
+    "start": "clear && nodemon --transpileOnly src/index.ts",
     "dev": "ts-node --transpileOnly src/index.ts",
     "build:compile": "tsc",
     "build:web": "cd src/web/ && npm run build && cd ../../",

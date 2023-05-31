@@ -4,7 +4,8 @@ import forge from 'node-forge';
 import tls from 'tls';
 import url from 'url';
 import fs from 'fs';
-import { uniqueId } from 'lodash';
+import { isBuffer, isObject, uniqueId } from 'lodash';
+import needle from 'needle';
 
 const { pki } = forge;
 
@@ -117,12 +118,14 @@ export function createFakeHttpsWebSite(
             }));
         },
     });
+
     fakeServer.listen(0, () => {
         const address = fakeServer.address();
         const port = typeof address === 'string' ? 443 : address?.port;
         successFun(port || 443);
     });
-    fakeServer.on('request', (req, res) => {
+
+    fakeServer.on('request', async (req, res) => {
         // 解析客户端请求
         const urlObject = url.parse(req.url || '');
         const hostName = req.headers.host || '';
@@ -137,48 +140,40 @@ export function createFakeHttpsWebSite(
 
         const p = `https://${options.hostname}${options.path}`;
 
-        // 拿着客户端的请求参数转发给目标服务器
-        const httpsReq = https.request(options, (httpsRes) => {
+        const method = req.method || 'get';
+
+        try {
+            // 拿着客户端的请求参数转发给目标服务器
+            const httpsRes = await needle(method, p, req.headers, {
+                timeout: 10000,
+            });
+            // 拿到目标服务器的所有数据，转发给客户端
             res.writeHead(httpsRes.statusCode || 500, httpsRes.headers);
 
-            let data = '';
-            // 拿到目标服务器的所有数据，转发给客户端
-            httpsRes.pipe(res);
-            httpsRes.on('data', (chunk) => {
-                data += chunk.toString();
-            });
+            if (isObject(httpsRes.body) && !isBuffer(httpsRes.body)) {
+                res.write(JSON.stringify(httpsRes.body));
+            } else {
+                res.write(httpsRes.body);
+            }
 
-            httpsRes.on('end', () => {
-                res.end();
-                fakeServer.close();
+            wsInstance?.send(JSON.stringify({
+                id: uniqueId(),
+                req: {
+                    protocol: 'https',
+                    ...options,
+                },
+                res: {
+                    statusCode: httpsRes.statusCode,
+                    data: httpsRes.body,
+                    ...httpsRes.headers,
+                },
+            }));
+        } catch (error) {
+            res.writeHead(500);
+            console.error('https needle error: ', p, error);
+        }
 
-                // 通过 websocket 将代理内容发给抓包站点
-                if (wsInstance) {
-                    wsInstance.send(JSON.stringify({
-                        id: uniqueId(),
-                        req: {
-                            protocol: 'https',
-                            ...options,
-                        },
-                        res: {
-                            statusCode: httpsRes.statusCode,
-                            data,
-                            ...httpsRes.headers,
-                        },
-                    }));
-                }
-            });
-
-            httpsRes.on('error', (err) => {
-                console.error('https response error', err);
-            });
-        });
-
-        httpsReq.on('error', (err) => {
-            console.error(p, '[https request error]', err);
-        });
-
-        httpsReq.end();
+        res.end();
     });
 
     fakeServer.on('error', (err) => {
