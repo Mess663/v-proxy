@@ -1,10 +1,4 @@
-
-export interface LocalInfo {
-  host: string
-  ip: string
-  pid: string
-  port: number
-}
+import {LocalInfo} from '../../../definition/api_data'
 
 const baseUrl = import.meta.env.DEV ? 'http://localhost:8899' : ''
 

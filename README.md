@@ -1,6 +1,6 @@
 # v-proxy
 
-简单易用的跨端 http/https 抓包工具
+简单易用的 http/https 抓包工具
 
 ## 安装
 ```
@@ -11,9 +11,13 @@
 
 ## 使用
 ```
-    v-proxy [port = 8899] 
+    // 启动：
+    v-proxy [port = 8899]  // or vp [port = 8899]
 
-    port 抓包页面端口，默认 8899
+    port 代理端口，默认 8899
+
+    // 关闭：
+    v-proxy close  // or vp close
 ```
 
 ## 功能展示
