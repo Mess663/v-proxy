@@ -21,6 +21,9 @@
 ```
 
 ## 功能展示
+- 请求列表：
 ![](./src/static/readme/1.png)
+- 请求详情：
 ![](./src/static/readme/2.png)
+- 过滤请求：
 ![](./src/static/readme/3.png)
