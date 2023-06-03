@@ -16,7 +16,7 @@
     "copy:public": "shx mkdir -p ./lib/public && shx cp -r ./src/public/* ./lib/public",
     "copy:web": "shx mkdir -p ./lib/web/dist && shx cp -r ./src/web/dist/* ./lib/web/dist",
     "build:copy": "npm run copy:public && npm run copy:web",
-    "build": "shx rm -rf lib && npm run build:compile && npm run build:copy",
+    "build": "shx rm -rf lib && npm run build:compile && npm run build:web && npm run build:copy",
     "pub": "npm run build && npm publish",
     "create_crt": "ts-node --transpileOnly src/create_root_cert.ts"
   },
