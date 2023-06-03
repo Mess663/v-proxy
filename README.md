@@ -9,11 +9,15 @@
     pnpm i -g v-proxy
 ```
 
-## 试用
+## 使用
 ```
+    // 启动：
     v-proxy [port = 8899]  // or vp [port = 8899]
 
     port 代理端口，默认 8899
+
+    // 关闭：
+    v-proxy close  // or vp close
 ```
 
 ## 功能展示
