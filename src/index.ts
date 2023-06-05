@@ -18,6 +18,8 @@ const startLog = () => {
     console.log(chalk.green('请使用上面的ip和端口来设置代理，抓包和安装证书请打开上面地址'));
 };
 
+// test
+
 function startDaemon() {
     const daemon = spawn('node', ['lib/start.js', port], {
         detached: true,
